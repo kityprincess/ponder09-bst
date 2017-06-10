@@ -110,10 +110,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="assignment09.cpp" />
     <ClCompile Include="week09.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="bnode.h" />
     <ClInclude Include="bst.h" />
     <ClInclude Include="sortBinary.h" />
   </ItemGroup>

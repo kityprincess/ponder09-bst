@@ -15,9 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="assignment09.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="week09.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -27,6 +24,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="sortBinary.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="bnode.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

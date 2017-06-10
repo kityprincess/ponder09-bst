@@ -11,6 +11,54 @@
 #ifndef BST_H
 #define BST_H
 
+#include <cassert>
+#include <stack>
+#include "bnode.h"
+
+template <class T>
+class BSTIterator
+{
+public:
+   BSTIterator<T> & operator -- ();
+   BSTIterator<T> & operator ++ () { return *this; };
+   T & operator * () const { return nodes.top()->data; }
+
+private:
+   stack<BinaryNode<T> * > nodes;
+};
+
+template <class T>
+class BST
+{
+public:
+   BST() { }
+   BST(const BST & in_source) { }
+   BST & operator = (const BST & in_source) { return *this; }
+   int size() const { return 0; }
+   bool empty() const { return false; }
+   void clear() { }
+   void insert(const T & in_value) { }
+   void remove(const BSTIterator<T> & in_pItem) { }
+
+   BSTIterator<T> find(const T & in_value) const { BSTIterator<T> result; return result;  }
+   BSTIterator<T> begin() const { BSTIterator<T> result; return result; }
+   BSTIterator<T> end() const { BSTIterator<T> result; return result;  }
+   BSTIterator<T> rbegin() const { BSTIterator<T> result; return result;  }
+   BSTIterator<T> rend() const { BSTIterator<T> result; return result;  }
+
+};
+
+template <class T>
+bool operator != (const BSTIterator<T> & lhs, const BSTIterator<T> & rhs)
+{
+   return false;
+}
+
+template <class T>
+bool operator == (const BSTIterator<T> & lhs, const BSTIterator<T> & rhs)
+{
+   return false;
+}
 
 /**************************************************
  * BST ITERATOR :: DECREMENT PREFIX
