@@ -46,6 +46,9 @@ public:
    BSTIterator<T> rbegin() const { BSTIterator<T> result; return result;  }
    BSTIterator<T> rend() const { BSTIterator<T> result; return result;  }
 
+private:
+   BinaryNode<T> * root;
+
 };
 
 template <class T>
