@@ -45,7 +45,7 @@ public:
    int size() const { return 0; }
    bool empty() const { return false; }
    void clear() { }
-   void insert(const T & in_value) { }
+   void insert(const T & in_value);
    void remove(const BSTIterator<T> & in_pItem) { }
 
    BSTIterator<T> find(const T & in_value) const { BSTIterator<T> result; return result;  }
@@ -55,6 +55,7 @@ public:
    BSTIterator<T> rend() const { BSTIterator<T> result; return result;  }
 
 private:
+   void insertInternal(const T & in_value, BinaryNode<T> * & in_subtree);
    BinaryNode<T> * root;
 
 };
@@ -128,5 +129,44 @@ BSTIterator <T> & BSTIterator <T> :: operator -- ()
    return *this;
 }
 
-#endif // BST_H
+/**************************************************
+* BST :: INSERT
+* Adds a new value to the BST in the appropriate
+* spot. 
+* Note: DOES NOT ATTEMPT TO BALANCE THE TREE
+*************************************************/
+template<class T>
+inline void BST<T>::insert(const T & in_value)
+{
+   insertInternal(in_value, root);
+}
 
+/**************************************************
+* BST :: INSERTINTERNAL
+* Implements a recursive algorithm to insert a
+* binary node in the right spot
+* Note: DOES NOT ATTEMPT TO BALANCE THE TREE
+*************************************************/
+template<class T>
+inline void BST<T>::insertInternal(const T & in_value, BinaryNode<T>*& in_subtree)
+{
+   if (NULL == in_subtree)
+   {
+      try
+      {
+         in_subtree = new BinaryNode<T>(in_value);
+      }
+      catch (bad_alloc ex)
+      {
+         throw "ERROR: Unable to allocate a node";
+      }
+   }
+   else if (in_value < in_subtree->data)
+      insertInternal(in_value, in_subtree->pLeft);
+   else if (in_value > in_subtree->data)
+      insertInternal(in_value, in_subtree->pRight);
+   else
+      return;
+}
+
+#endif // BST_H
