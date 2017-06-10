@@ -15,6 +15,10 @@
 #include <stack>
 #include "bnode.h"
 
+/*************************************************************************
+* CLASS: BSTITERATOR
+* Iterator for a BST
+**************************************************************************/
 template <class T>
 class BSTIterator
 {
@@ -27,6 +31,10 @@ private:
    stack<BinaryNode<T> * > nodes;
 };
 
+/***************************************************************************
+* CLASS: BST
+* A Binary Search Tree
+****************************************************************************/
 template <class T>
 class BST
 {
@@ -51,12 +59,20 @@ private:
 
 };
 
+/************************************************************************
+* :: NOT EQUAL (BSTITERATOR)
+* Indicates whether two BSTIterators point to the same node
+*************************************************************************/
 template <class T>
 bool operator != (const BSTIterator<T> & lhs, const BSTIterator<T> & rhs)
 {
    return false;
 }
 
+/************************************************************************
+* :: EQUAL (BSTITERATOR)
+* Indicates whether two BSTIterators point to the same node
+*************************************************************************/
 template <class T>
 bool operator == (const BSTIterator<T> & lhs, const BSTIterator<T> & rhs)
 {
