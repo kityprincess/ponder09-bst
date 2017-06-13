@@ -55,9 +55,9 @@ public:
 
    BSTIterator<T> find(const T & in_value) const { BSTIterator<T> result; return result;  }
    BSTIterator<T> begin() const;
-   BSTIterator<T> end() const;
+   BSTIterator<T> end() { return BSTIterator <T>(NULL); }
    BSTIterator<T> rbegin() const;
-   BSTIterator<T> rend() const;
+   BSTIterator<T> rend() { return BSTIterator <T>(NULL); }
 
 private:
    void insertInternal(const T & in_value, BinaryNode<T> * & in_subtree);
@@ -190,7 +190,7 @@ BSTIterator <T> & BSTIterator <T> :: operator -- ()
 * Number of elements in binary search tree.
 *****************************************/
 template <class T>
-int BST<T>::size() const
+int BST<T> :: size() const
 {
    // no elements in tree
    if (root == NULL)
@@ -215,9 +215,49 @@ int BST<T>::size() const
 * Note: DOES NOT ATTEMPT TO BALANCE THE TREE
 *************************************************/
 template<class T>
-inline void BST<T>::insert(const T & in_value)
+void BST<T> :: insert(const T & in_value)
 {
    insertInternal(in_value, root);
+}
+
+/**************************************************
+* BST :: REMOVE
+* Remove a value from the BST and adjust tree.
+*************************************************/
+template<class T>
+void BST<T> :: remove(const BSTIterator<T> & in_pItem)
+{
+   //BinaryNode <T> node = *in_pItem;
+   // No item to remove
+   //if (find(node) == NULL)
+   //{
+   //   cout << "Item not found.";
+   //   return;
+   //}
+
+   //// Case where there are 2 children
+   //if (node->pLeft != NULL && node->pRight != NULL)
+   //{
+   //   // find the in-order successor
+   //   BinaryNode <T> successor = node->pRight;
+   //   while (successor->pLeft != NULL)
+   //   {
+   //      successor = successor->pLeft;
+   //   }
+   //   node->data = successor->data;
+   //   node = successor;
+   //}
+
+   //// Case where there are no children or 1 child
+   //BinaryNode <T> subtree = node->pLeft;
+   //if (subtree == NULL)
+   //   subtree = node->pRight;
+   //if (node->pParent == NULL)
+   //   root = subtree;
+   //else if (node->pParent->pLeft == node)
+   //   node->pParent->pLeft = subtree;
+   //else node->pParent->pRight == subtree;
+   //delete node;
 }
 
 /**************************************************
@@ -227,7 +267,7 @@ inline void BST<T>::insert(const T & in_value)
 * Note: DOES NOT ATTEMPT TO BALANCE THE TREE
 *************************************************/
 template<class T>
-inline void BST<T>::insertInternal(const T & in_value, BinaryNode<T>*& in_subtree)
+void BST<T> :: insertInternal(const T & in_value, BinaryNode<T> * & in_subtree)
 {
    if (NULL == in_subtree)
    {
@@ -271,7 +311,7 @@ BinaryNode <T> * BST<T> :: findLeft(BinaryNode <T> * pElement) const
 * Finds the rightmost data element.
 *************************************************/
 template <class T>
-BinaryNode <T> * BST<T> ::findRight(BinaryNode <T> * pElement) const
+BinaryNode <T> * BST<T> :: findRight(BinaryNode <T> * pElement) const
 {
    BinaryNode <T> * tempRight = root;
 
@@ -295,16 +335,6 @@ BSTIterator<T> BST<T> :: begin() const
 }
 
 /**************************************************
-* BST :: END
-* Returns an iterator to the first slot off the end
-*************************************************/
-template <class T>
-BSTIterator<T> BST<T> :: end() const
-{
-   return ++rbegin();
-}
-
-/**************************************************
 * BST :: RBEGIN
 * Returns an iterator to the rightmost element in the list
 *************************************************/
@@ -312,56 +342,6 @@ template <class T>
 BSTIterator<T> BST<T> :: rbegin() const
 {
    return BSTIterator<T>(findRight(root));
-}
-
-/**************************************************
-* BST :: REND
-* Returns an iterator to the first slot off the front
-*************************************************/
-template <class T>
-BSTIterator<T> BST<T> ::rend() const
-{
-   return --begin();
-}
-
-/**************************************************
-* BST :: REMOVE
-* Remove a value from the BST and adjust tree.
-*************************************************/
-template<class T>
-void BST<T>::remove(const BSTIterator<T> & in_pItem)
-{
-   //BinaryNode <T> node = *in_pItem;
-   // No item to remove
-   //if (find(node) == NULL)
-   //{
-   //   cout << "Item not found.";
-   //   return;
-   //}
-
-   //// Case where there are 2 children
-   //if (node->pLeft != NULL && node->pRight != NULL)
-   //{
-   //   // find the in-order successor
-   //   BinaryNode <T> successor = node->pRight;
-   //   while (successor->pLeft != NULL)
-   //   {
-   //      successor = successor->pLeft;
-   //   }
-   //   node->data = successor->data;
-   //   node = successor;
-   //}
-
-   //// Case where there are no children or 1 child
-   //BinaryNode <T> subtree = node->pLeft;
-   //if (subtree == NULL)
-   //   subtree = node->pRight;
-   //if (node->pParent == NULL)
-   //   root = subtree;
-   //else if (node->pParent->pLeft == node)
-   //   node->pParent->pLeft = subtree;
-   //else node->pParent->pRight == subtree;
-   //delete node;
 }
 
 #endif // BST_H
