@@ -224,6 +224,7 @@ void testIterate()
       for (it = tree2.rbegin(); it != tree2.rend(); --it)
          cout << "  " << *it;
       cout << "  }\n";
+      tree1.clear();
    }
    catch (const char * s)
    {
