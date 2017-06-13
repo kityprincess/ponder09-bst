@@ -79,7 +79,6 @@ template <class StackElement>
 Stack<StackElement> ::Stack(int in_capacity) throw (const char *)
    : m_capacity(0), m_top(-1), m_data(NULL)
 {
-
    assert(in_capacity >= 0);
    // First, assure the user specified a valid capacity; if capacity
    // is < 0, we just exit, we've already initialized our values
@@ -106,7 +105,6 @@ template <class StackElement>
 Stack<StackElement> ::Stack(const Stack<StackElement> & source) throw (const char *)
    : m_capacity(source.m_capacity), m_top(source.m_top)
 {
-
    // Now we try to allocate our array
    m_data = new (std::nothrow) StackElement[m_capacity];
 
@@ -118,7 +116,6 @@ Stack<StackElement> ::Stack(const Stack<StackElement> & source) throw (const cha
    // our buffer, so let's copy the data
    for (int i = 0; i <= m_top; i++)
       m_data[i] = source.m_data[i];
-
 }
 
 /**********************************************************************
@@ -129,7 +126,6 @@ template <class StackElement>
 Stack<StackElement> & Stack<StackElement> :: operator =(
    const Stack<StackElement> & rhs) throw (const char *)
 {
-
    // Check to see if we're self-assigning and quit the operation if we
    // are
    if (this == &rhs)
@@ -240,4 +236,5 @@ void Stack <StackElement> :: pop() throw (const char *)
       throw "ERROR: Unable to pop from an empty Stack";
 }
 
-#endif // Vector_H
+#endif // Stack_H
+
