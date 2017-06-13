@@ -23,23 +23,21 @@ template <class StackElement>
 class Stack
 {
 public:
+   // default constructor
+   Stack() : m_capacity(0), m_top(-1), m_data(NULL) {}
 
-   // non-default AND default constructor
-   // Since we provide a default value for the parameter, this can be
-   // used as the default constructor too
-   Stack(int in_capacity = 0) throw (const char *);
+   // non-default constructor
+   Stack(int in_capacity) throw (const char *);
 
    // copy constructor
    Stack(const Stack<StackElement> & source) throw (const char *);
 
    // destructor
-   ~Stack() {
-      if (m_capacity > 0) // If this is true, we have an allocated buffer
-         delete[] m_data;
-   }
+   ~Stack()    { if (m_capacity > 0) // If this is true, we have an allocated buffer
+                 delete[] m_data; }
 
    // assignment operator
-   Stack<StackElement> & operator = (const Stack<StackElement> & rhs) throw (const char *);
+   Stack<StackElement> & operator =(const Stack<StackElement> & rhs) throw (const char *);
 
    // check if stack is empty
    bool empty() const { return m_top == -1; };
@@ -51,10 +49,13 @@ public:
    int capacity() const { return m_capacity; }
 
    // clear the stack
-   void clear() { m_top = -1; }
+   void clear() { m_capacity = 0; m_top = -1; }
 
    // add a value to the top of the stack
    void push(const StackElement & value) throw (const char *);
+
+   // resize if capacity is reached
+   void resize(int in_capacity) throw (const char *);
 
    // return the value at the top of the stack
    StackElement & top() const throw (const char *);
@@ -63,10 +64,10 @@ public:
    void pop() throw (const char *);
 
 private:
-   StackElement * m_data;              // buffer
-   int m_capacity;                     // capacity
-   int m_top;                          // top of the stack
-   void resize() throw (const char*);  //resize the stack
+   StackElement * m_data;           // buffer
+   int m_capacity;                  // capacity
+   int m_numItems;                  // how many items are in the stack?
+   int m_top;                       // top of the stack
 };
 
 /***********************************************************************
@@ -104,7 +105,6 @@ template <class StackElement>
 Stack<StackElement> ::Stack(const Stack<StackElement> & source) throw (const char *)
    : m_capacity(source.m_capacity), m_top(source.m_top)
 {
-
    // Now we try to allocate our array
    m_data = new (std::nothrow) StackElement[m_capacity];
 
@@ -116,7 +116,6 @@ Stack<StackElement> ::Stack(const Stack<StackElement> & source) throw (const cha
    // our buffer, so let's copy the data
    for (int i = 0; i <= m_top; i++)
       m_data[i] = source.m_data[i];
-
 }
 
 /**********************************************************************
@@ -124,8 +123,8 @@ Stack<StackElement> ::Stack(const Stack<StackElement> & source) throw (const cha
 * Assigns one Stack to another, creating a copy of the source
 **********************************************************************/
 template <class StackElement>
-Stack<StackElement> & Stack<StackElement> :: operator =
-(const Stack<StackElement> & rhs) throw (const char *)
+Stack<StackElement> & Stack<StackElement> :: operator =(
+   const Stack<StackElement> & rhs) throw (const char *)
 {
    // Check to see if we're self-assigning and quit the operation if we
    // are
@@ -137,16 +136,11 @@ Stack<StackElement> & Stack<StackElement> :: operator =
    // copy in the new one
    if (m_capacity != rhs.m_capacity)
    {
-      // We only delete our data array if we have data
-      // note that we're assuming that m_data is not null if m_capacity
-      // is not zero.
       if (m_capacity)
          delete[] m_data;
 
       m_capacity = rhs.m_capacity;
 
-      // We only create a new array if our source had one (i.e.
-      // it had capacity)
       if (m_capacity)
       {
          m_data = new (std::nothrow) StackElement[m_capacity];
@@ -169,22 +163,47 @@ Stack<StackElement> & Stack<StackElement> :: operator =
 * Place a value at the top of the stack
 ****************************************************************/
 template <class StackElement>
-void Stack <StackElement> ::push(const StackElement & value) throw (const char *)
+void Stack <StackElement> :: push(const StackElement & value) throw (const char *)
 {
-   if (m_top == m_capacity - 1)
-   {
-      resize();
+   if (m_top == -1) {
+      m_capacity = 1;
+      m_data = new StackElement[m_capacity];
    }
 
-   if (m_top < m_capacity - 1)
-   {
-      ++m_top;
-      m_data[m_top] = value;
-   }
+   // double if capacity is reached
+   if (m_capacity == m_top + 1)
+      resize(m_capacity *= 2);
 
-   else
+   m_data[++m_top] = value;
+}
+
+/****************************************************************
+* STACK :: RESIZE
+* Resize stack if capacity is reached
+****************************************************************/
+template <class StackElement>
+void Stack <StackElement> :: resize(int in_capacity) throw (const char *)
+{
+   try
+    {
+      StackElement *bufferNew = new StackElement[in_capacity];
+
+      // copy the data into the new buffer
+      int i;
+      for (i = 0; i < m_top + 1; i++)
+         bufferNew[i] = m_data[i];
+      bufferNew[i] = '\0';
+
+      // delete the old buffer
+      delete [] m_data;
+
+      // reset data
+      m_data = bufferNew;
+   }
+   catch(std::bad_alloc)
    {
       throw "ERROR: Unable to allocate a new buffer for Stack";
+      m_capacity /= 2;
    }
 }
 
@@ -193,7 +212,7 @@ void Stack <StackElement> ::push(const StackElement & value) throw (const char *
 * Will check what value is at the top of the stack
 ****************************************************************/
 template <class StackElement>
-StackElement & Stack <StackElement> ::top() const throw (const char *)
+StackElement & Stack <StackElement> :: top() const throw (const char *)
 {
    if (!empty())
       return (m_data[m_top]);
@@ -208,7 +227,7 @@ StackElement & Stack <StackElement> ::top() const throw (const char *)
 * Pop an item off the end of the Stack
 **************************************************/
 template <class StackElement>
-void Stack <StackElement> ::pop() throw (const char *)
+void Stack <StackElement> :: pop() throw (const char *)
 {
    // If the stack is not empty, pop off the top element
    if (!empty())
@@ -217,48 +236,5 @@ void Stack <StackElement> ::pop() throw (const char *)
       throw "ERROR: Unable to pop from an empty Stack";
 }
 
-/***************************************************
-* STACK :: RESIZE
-* Increases the size of the array to accomodate more
-* data.
-****************************************************/
-template <class StackElement>
-void Stack <StackElement> ::resize() throw (const char*)
-{
-   // First, check to see if we have an array
-   // if not, we simply create a small one and
-   // return
-   if (!m_capacity)
-   {
-      m_data = new (std::nothrow) StackElement[1];
-
-      if (NULL == m_data)
-         throw "ERROR: Unable to allocate a new buffer for Stack";
-
-      m_capacity = 1;
-      return;
-   }
-
-   // If we reach this point, then we have
-   // an array, so we need to double its size
-   // and copy over the existing data
-   StackElement * new_data = new (std::nothrow) StackElement[m_capacity * 2];
-
-   if (NULL == new_data)
-      throw "ERROR: Unable to allocate a new buffer for Stack";
-
-   // We increase m_capacity _after_ we know we've succeeded in
-   // doubling the array size, so that we know m_capacity matches
-   // reality
-   m_capacity *= 2;
-
-   // Then, we copy over our existing data
-   for (int i = 0; i <= m_top; i++)
-      new_data[i] = m_data[i];
-
-   // Delete our old buffer and swap in the new one
-   delete[] m_data;
-   m_data = new_data;
-}
-
 #endif // Stack_H
+
