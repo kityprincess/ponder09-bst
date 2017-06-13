@@ -39,12 +39,13 @@ template <class T>
 class BST
 {
 public:
-   BST() { }
-   BST(const BST & in_source) { }
-   BST & operator = (const BST & in_source) { return *this; }
+   BST() : root(NULL) { }
+   ~BST() { clear(); }
+   BST(BST <T> & in_source) throw (const char *);
+   BST & operator = (const BST & in_source);
    int size() const { return 0; }
    bool empty() const { return false; }
-   void clear() { }
+   void clear() { deleteBinaryTree(BinaryNode<T> * root); }
    void insert(const T & in_value);
    void remove(const BSTIterator<T> & in_pItem) { }
 
@@ -56,9 +57,59 @@ public:
 
 private:
    void insertInternal(const T & in_value, BinaryNode<T> * & in_subtree);
+   BinaryNode<T> * copy(BinaryNode <T> * pElement);
    BinaryNode<T> * root;
 
 };
+
+/***********************************************************************
+* BST :: COPY
+* Copies over the elements in a tree
+***********************************************************************/
+template <class T>
+BinaryNode<T> * BST<T> :: copy(BinaryNode <T> * pElement)
+{
+   BinaryNode <T> * newNode;
+   try
+   {
+   newNode = new BinaryNode <T>(pElement->data);
+   if (pElement->pLeft != NULL)
+      {
+         newNode->pLeft = copy(pElement->pLeft);
+      }
+   if (pElement->pRight != NULL)
+      {
+         newNode->pRight = copy(pElement->pRight);
+      }
+    }
+    catch(std::bad_alloc)
+    {
+       throw "ERROR: Unable to allocate a node";
+    }
+    return newNode;
+}
+
+/*******************************************
+ * BST :: COPY CONSTRUCTOR
+ *******************************************/
+template <class T>
+BST <T> :: BST(BST <T> & in_source) throw (const char *)
+{
+   if (in_source.root != NULL)
+      {
+      this->root = copy(in_source.root);
+      }
+}
+
+/*******************************************
+ * BST :: ASSIGNMENT OPERATOR
+ *******************************************/
+ template <class T>
+ BST<T> & BST<T> :: operator = (const BST & in_source)
+ {
+    this->root = copy(in_source.root);
+    return *this;
+ }
 
 /************************************************************************
 * :: NOT EQUAL (BSTITERATOR)
