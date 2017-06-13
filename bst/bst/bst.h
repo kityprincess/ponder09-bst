@@ -23,6 +23,9 @@ template <class T>
 class BSTIterator
 {
 public:
+   BSTIterator() { nodes.push(NULL); }
+   BSTIterator(BinaryNode<T> * in_node) { nodes.push(in_node); }
+   BSTIterator(stack<BinaryNode<T> * > in_stack) { nodes = in_stack; }
    BSTIterator<T> & operator -- ();
    BSTIterator<T> & operator ++ () { return *this; };
    T & operator * () const { return nodes.top()->data; }
@@ -39,26 +42,78 @@ template <class T>
 class BST
 {
 public:
-   BST() { }
-   BST(const BST & in_source) { }
-   BST & operator = (const BST & in_source) { return *this; }
+   BST() : root(NULL) { }
+   ~BST() { clear(); }
+   BST(BST <T> & in_source) throw (const char *);
+   BST & operator = (const BST & in_source);
    int size() const { return 0; }
    bool empty() const { return false; }
-   void clear() { }
+   void clear() { deleteBinaryTree(BinaryNode<T> * root); }
    void insert(const T & in_value);
    void remove(const BSTIterator<T> & in_pItem) { }
 
    BSTIterator<T> find(const T & in_value) const { BSTIterator<T> result; return result;  }
-   BSTIterator<T> begin() const { BSTIterator<T> result; return result; }
-   BSTIterator<T> end() const { BSTIterator<T> result; return result;  }
-   BSTIterator<T> rbegin() const { BSTIterator<T> result; return result;  }
-   BSTIterator<T> rend() const { BSTIterator<T> result; return result;  }
+   BSTIterator<T> begin() const;
+   BSTIterator<T> end() const;
+   BSTIterator<T> rbegin() const;
+   BSTIterator<T> rend() const;
 
 private:
    void insertInternal(const T & in_value, BinaryNode<T> * & in_subtree);
+   BinaryNode <T> * findLeft(BinaryNode <T> * pElement) const;
+   BinaryNode <T> * findRight(BinaryNode <T> * pElement) const;
+   BinaryNode<T> * copy(BinaryNode <T> * pElement);
    BinaryNode<T> * root;
-
 };
+
+/***********************************************************************
+* BST :: COPY
+* Copies over the elements in a tree
+***********************************************************************/
+template <class T>
+BinaryNode<T> * BST<T> ::copy(BinaryNode <T> * pElement)
+{
+   BinaryNode <T> * newNode;
+   try
+   {
+      newNode = new BinaryNode <T>(pElement->data);
+      if (pElement->pLeft != NULL)
+      {
+         newNode->pLeft = copy(pElement->pLeft);
+      }
+      if (pElement->pRight != NULL)
+      {
+         newNode->pRight = copy(pElement->pRight);
+      }
+   }
+   catch (std::bad_alloc)
+   {
+      throw "ERROR: Unable to allocate a node";
+   }
+   return newNode;
+}
+
+/*******************************************
+* BST :: COPY CONSTRUCTOR
+*******************************************/
+template <class T>
+BST <T> ::BST(BST <T> & in_source) throw (const char *)
+{
+   if (in_source.root != NULL)
+   {
+      this->root = copy(in_source.root);
+   }
+}
+
+/*******************************************
+* BST :: ASSIGNMENT OPERATOR
+*******************************************/
+template <class T>
+BST<T> & BST<T> :: operator = (const BST & in_source)
+{
+   this->root = copy(in_source.root);
+   return *this;
+}
 
 /************************************************************************
 * :: NOT EQUAL (BSTITERATOR)
@@ -168,5 +223,82 @@ inline void BST<T>::insertInternal(const T & in_value, BinaryNode<T>*& in_subtre
    else
       return;
 }
+
+/**************************************************
+* BST :: FINDLEFT
+* Finds the leftmost data element.
+*************************************************/
+template <class T>
+BinaryNode <T> * BST<T> :: findLeft(BinaryNode <T> * pElement) const
+{
+   BinaryNode <T> * tempLeft = root;
+
+   if (root != 0)
+   {
+      findLeft(pElement->pLeft);
+      tempLeft = pElement;
+   }
+
+   return tempLeft;
+}
+
+/**************************************************
+* BST :: FINDRIGHT
+* Finds the rightmost data element.
+*************************************************/
+template <class T>
+BinaryNode <T> * BST<T> ::findRight(BinaryNode <T> * pElement) const
+{
+   BinaryNode <T> * tempRight = root;
+
+   if (root != 0)
+   {
+      findRight(pElement->pRight);
+      tempRight = pElement;
+   }
+
+   return tempRight;
+}
+
+/**************************************************
+* BST :: BEGIN
+* Returns an iterator to the leftmost element in the list
+*************************************************/
+template <class T>
+BSTIterator<T> BST<T> :: begin() const
+{
+   return BSTIterator<T>(findLeft(root));
+}
+
+/**************************************************
+* BST :: END
+* Returns an iterator to the first slot off the end
+*************************************************/
+template <class T>
+BSTIterator<T> BST<T> :: end() const
+{
+   return ++rbegin();
+}
+
+/**************************************************
+* BST :: RBEGIN
+* Returns an iterator to the rightmost element in the list
+*************************************************/
+template <class T>
+BSTIterator<T> BST<T> :: rbegin() const
+{
+   return BSTIterator<T>(findRight(root));
+}
+
+/**************************************************
+* BST :: REND
+* Returns an iterator to the first slot off the front
+*************************************************/
+template <class T>
+BSTIterator<T> BST<T> ::rend() const
+{
+   return --begin();
+}
+
 
 #endif // BST_H

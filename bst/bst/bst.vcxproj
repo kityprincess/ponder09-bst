@@ -116,6 +116,7 @@
     <ClInclude Include="bnode.h" />
     <ClInclude Include="bst.h" />
     <ClInclude Include="sortBinary.h" />
+    <ClInclude Include="stack.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="makefile" />
