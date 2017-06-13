@@ -3,9 +3,9 @@
  *    Week 09, Binary Search Tree (BST)
  *    Brother Helfrich, CS 235
  * Author:
- *    
+ *
  * Summary:
- *    
+ *
  ************************************************************************/
 
 #ifndef BST_H
@@ -46,17 +46,18 @@ public:
    ~BST() { clear(); }
    BST(BST <T> & in_source) throw (const char *);
    BST & operator = (const BST & in_source);
-   int size() const { return 0; }
-   bool empty() const { return false; }
-   void clear() { deleteBinaryTree(BinaryNode<T> * root); }
+
+   int size() const;
+   bool empty() const { return root == NULL; }
+   void clear() { deleteBinaryTree(root); }
    void insert(const T & in_value);
-   void remove(const BSTIterator<T> & in_pItem) { }
+   void remove(const BSTIterator<T> & in_pItem);
 
    BSTIterator<T> find(const T & in_value) const { BSTIterator<T> result; return result;  }
    BSTIterator<T> begin() const;
-   BSTIterator<T> end() { return BSTIterator <T>(NULL); }
+   BSTIterator<T> end() const;
    BSTIterator<T> rbegin() const;
-   BSTIterator<T> rend() { return BSTIterator <T>(NULL); }
+   BSTIterator<T> rend() const;
 
 private:
    void insertInternal(const T & in_value, BinaryNode<T> * & in_subtree);
@@ -71,49 +72,49 @@ private:
 * Copies over the elements in a tree
 ***********************************************************************/
 template <class T>
-BinaryNode<T> * BST<T> ::copy(BinaryNode <T> * pElement)
+BinaryNode<T> * BST<T> :: copy(BinaryNode <T> * pElement)
 {
    BinaryNode <T> * newNode;
    try
    {
-      newNode = new BinaryNode <T>(pElement->data);
-      if (pElement->pLeft != NULL)
+   newNode = new BinaryNode <T>(pElement->data);
+   if (pElement->pLeft != NULL)
       {
          newNode->pLeft = copy(pElement->pLeft);
       }
-      if (pElement->pRight != NULL)
+   if (pElement->pRight != NULL)
       {
          newNode->pRight = copy(pElement->pRight);
       }
-   }
-   catch (std::bad_alloc)
-   {
-      throw "ERROR: Unable to allocate a node";
-   }
-   return newNode;
+    }
+    catch(std::bad_alloc)
+    {
+       throw "ERROR: Unable to allocate a node";
+    }
+    return newNode;
 }
 
 /*******************************************
-* BST :: COPY CONSTRUCTOR
-*******************************************/
+ * BST :: COPY CONSTRUCTOR
+ *******************************************/
 template <class T>
-BST <T> ::BST(BST <T> & in_source) throw (const char *)
+BST <T> :: BST(BST <T> & in_source) throw (const char *)
 {
    if (in_source.root != NULL)
-   {
+      {
       this->root = copy(in_source.root);
-   }
+      }
 }
 
 /*******************************************
-* BST :: ASSIGNMENT OPERATOR
-*******************************************/
-template <class T>
-BST<T> & BST<T> :: operator = (const BST & in_source)
-{
-   this->root = copy(in_source.root);
-   return *this;
-}
+ * BST :: ASSIGNMENT OPERATOR
+ *******************************************/
+ template <class T>
+ BST<T> & BST<T> :: operator = (const BST & in_source)
+ {
+    this->root = copy(in_source.root);
+    return *this;
+ }
 
 /************************************************************************
 * :: NOT EQUAL (BSTITERATOR)
@@ -184,10 +185,33 @@ BSTIterator <T> & BSTIterator <T> :: operator -- ()
    return *this;
 }
 
+/*****************************************
+* BST:: SIZE
+* Number of elements in binary search tree.
+*****************************************/
+template <class T>
+int BST<T>::size() const
+{
+   // no elements in tree
+   if (root == NULL)
+      return 0;
+
+   // add root and any subtrees
+   int size = 1;
+
+   if (root->pLeft)
+      size += root->pLeft->size();
+
+   if (root->pRight)
+      size += root->pRight->size();
+
+   return size;
+}
+
 /**************************************************
 * BST :: INSERT
 * Adds a new value to the BST in the appropriate
-* spot. 
+* spot.
 * Note: DOES NOT ATTEMPT TO BALANCE THE TREE
 *************************************************/
 template<class T>
@@ -271,6 +295,16 @@ BSTIterator<T> BST<T> :: begin() const
 }
 
 /**************************************************
+* BST :: END
+* Returns an iterator to the first slot off the end
+*************************************************/
+template <class T>
+BSTIterator<T> BST<T> :: end() const
+{
+   return ++rbegin();
+}
+
+/**************************************************
 * BST :: RBEGIN
 * Returns an iterator to the rightmost element in the list
 *************************************************/
@@ -278,6 +312,56 @@ template <class T>
 BSTIterator<T> BST<T> :: rbegin() const
 {
    return BSTIterator<T>(findRight(root));
+}
+
+/**************************************************
+* BST :: REND
+* Returns an iterator to the first slot off the front
+*************************************************/
+template <class T>
+BSTIterator<T> BST<T> ::rend() const
+{
+   return --begin();
+}
+
+/**************************************************
+* BST :: REMOVE
+* Remove a value from the BST and adjust tree.
+*************************************************/
+template<class T>
+void BST<T>::remove(const BSTIterator<T> & in_pItem)
+{
+   //BinaryNode <T> node = *in_pItem;
+   // No item to remove
+   //if (find(node) == NULL)
+   //{
+   //   cout << "Item not found.";
+   //   return;
+   //}
+
+   //// Case where there are 2 children
+   //if (node->pLeft != NULL && node->pRight != NULL)
+   //{
+   //   // find the in-order successor
+   //   BinaryNode <T> successor = node->pRight;
+   //   while (successor->pLeft != NULL)
+   //   {
+   //      successor = successor->pLeft;
+   //   }
+   //   node->data = successor->data;
+   //   node = successor;
+   //}
+
+   //// Case where there are no children or 1 child
+   //BinaryNode <T> subtree = node->pLeft;
+   //if (subtree == NULL)
+   //   subtree = node->pRight;
+   //if (node->pParent == NULL)
+   //   root = subtree;
+   //else if (node->pParent->pLeft == node)
+   //   node->pParent->pLeft = subtree;
+   //else node->pParent->pRight == subtree;
+   //delete node;
 }
 
 #endif // BST_H

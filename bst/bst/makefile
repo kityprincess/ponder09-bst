@@ -23,4 +23,3 @@ a.out: week09.o
 ##############################################################
 week09.o: bnode.h bst.h stack.h week09.cpp sortBinary.h
 	g++ -c week09.cpp -g
-
