@@ -54,9 +54,9 @@ public:
 
    BSTIterator<T> find(const T & in_value) const { BSTIterator<T> result; return result;  }
    BSTIterator<T> begin() const;
-   BSTIterator<T> end() const;
+   BSTIterator<T> end() { return BSTIterator <T>(NULL); }
    BSTIterator<T> rbegin() const;
-   BSTIterator<T> rend() const;
+   BSTIterator<T> rend() { return BSTIterator <T>(NULL); }
 
 private:
    void insertInternal(const T & in_value, BinaryNode<T> * & in_subtree);
@@ -271,16 +271,6 @@ BSTIterator<T> BST<T> :: begin() const
 }
 
 /**************************************************
-* BST :: END
-* Returns an iterator to the first slot off the end
-*************************************************/
-template <class T>
-BSTIterator<T> BST<T> :: end() const
-{
-   return ++rbegin();
-}
-
-/**************************************************
 * BST :: RBEGIN
 * Returns an iterator to the rightmost element in the list
 *************************************************/
@@ -289,16 +279,5 @@ BSTIterator<T> BST<T> :: rbegin() const
 {
    return BSTIterator<T>(findRight(root));
 }
-
-/**************************************************
-* BST :: REND
-* Returns an iterator to the first slot off the front
-*************************************************/
-template <class T>
-BSTIterator<T> BST<T> ::rend() const
-{
-   return --begin();
-}
-
 
 #endif // BST_H
