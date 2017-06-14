@@ -49,7 +49,7 @@ public:
 
    int size() const;
    bool empty() const { return root == NULL; }
-   void clear() { deleteBinaryTree(root); }
+   void clear() { deleteBinaryTree(root); root = NULL; }
    void insert(const T & in_value);
    void remove(const BSTIterator<T> & in_pItem);
 
@@ -74,6 +74,11 @@ private:
 template <class T>
 BinaryNode<T> * BST<T> :: copy(BinaryNode <T> * pElement)
 {
+   if (pElement == NULL)
+   {
+      return pElement;
+   }
+
    BinaryNode <T> * newNode;
    try
    {
@@ -101,9 +106,9 @@ template <class T>
 BST <T> :: BST(BST <T> & in_source) throw (const char *)
 {
    if (in_source.root != NULL)
-      {
+   {
       this->root = copy(in_source.root);
-      }
+   }
 }
 
 /*******************************************
@@ -295,9 +300,9 @@ void BST<T> :: insertInternal(const T & in_value, BinaryNode<T> * & in_subtree)
 template <class T>
 BinaryNode <T> * BST<T> :: findLeft(BinaryNode <T> * pElement) const
 {
-   BinaryNode <T> * tempLeft = root;
+   BinaryNode <T> * tempLeft = NULL;
 
-   if (root != 0)
+   if (pElement != 0)
    {
       findLeft(pElement->pLeft);
       tempLeft = pElement;
@@ -313,9 +318,9 @@ BinaryNode <T> * BST<T> :: findLeft(BinaryNode <T> * pElement) const
 template <class T>
 BinaryNode <T> * BST<T> :: findRight(BinaryNode <T> * pElement) const
 {
-   BinaryNode <T> * tempRight = root;
+   BinaryNode <T> * tempRight = NULL;
 
-   if (root != 0)
+   if (pElement != 0)
    {
       findRight(pElement->pRight);
       tempRight = pElement;
