@@ -72,10 +72,10 @@ public:
    BSTIterator<T> find(const T & in_value) const { BSTIterator<T> result; return result;  }
    BSTIterator<T> begin() const;
    // end is simply an iterator with a NULL pointer at the top of its stack
-   BSTIterator<T> end() { return BSTIterator <T>(); }
+   BSTIterator<T> end() { return BSTIterator <T>(NULL); }
    BSTIterator<T> rbegin() const;
    // rend is an iterator with a NULL pointer at the top of its stack
-   BSTIterator<T> rend() { return BSTIterator <T>(); }
+   BSTIterator<T> rend() { return BSTIterator <T>(NULL); }
 
 private:
    void insertInternal(const T & in_value, BinaryNode<T> * & in_subtree);
