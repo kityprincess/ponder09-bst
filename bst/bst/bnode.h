@@ -24,14 +24,15 @@ class BinaryNode
 public:
    BinaryNode() : pLeft(NULL), pRight(NULL), pParent(NULL), numElements(1) {}
    BinaryNode(T in_data): data(in_data), pRight(NULL), pParent(NULL), pLeft(NULL), numElements(1) {}
-   
+
    void addLeft(const T & t);
    void addLeft(BinaryNode <T> * pAdd);
    void addRight(const T & t);
    void addRight(BinaryNode <T> * pAdd);
    int size();
-   
-   public:
+   bool operator == (const BinaryNode & rhs);
+
+public:
    BinaryNode <T> * pLeft;
    BinaryNode <T> * pRight;
    BinaryNode <T> * pParent;
@@ -103,6 +104,19 @@ int BinaryNode <T> :: size()
       size += pRight->size();
 
    return size;
+}
+
+/*******************************************
+ * BNODE :: EQUALITY OPERATOR
+ *******************************************/
+template <class T>
+bool BinaryNode<T> :: operator == (const BinaryNode & rhs)
+{
+   return this->data == rhs.data &&
+         this->pLeft == rhs.pLeft &&
+         this->pRight == rhs.pRight &&
+         this->pParent == rhs.pParent &&
+         this->numElements == rhs.numElements;
 }
 
 /*****************************************

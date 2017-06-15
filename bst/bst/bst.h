@@ -15,6 +15,9 @@
 #include <stack>
 #include "bnode.h"
 
+template <class T>
+class BST; // fwd declaration
+
 /*************************************************************************
 * CLASS: BSTITERATOR
 * Iterator for a BST
@@ -23,6 +26,8 @@ template <class T>
 class BSTIterator
 {
 public:
+   friend class BST<T>;
+
    BSTIterator() { nodes.push(NULL); }
    BSTIterator(BinaryNode<T> * in_node) { nodes.push(in_node); }
    BSTIterator(stack<BinaryNode<T> * > in_stack) { nodes = in_stack; }
@@ -85,10 +90,10 @@ BinaryNode<T> * BST<T> :: copy(BinaryNode <T> * pElement)
    try
    {
    newNode = new BinaryNode <T>(pElement->data);
-      
+
        newNode->pLeft = copy(pElement->pLeft);
        newNode->pRight = copy(pElement->pRight);
-      
+
     }
     catch(std::bad_alloc)
     {
@@ -198,10 +203,10 @@ int BST<T> :: size() const
 
    // add root and any subtrees
    int size = 1;
-   
+
    if (root->pLeft)
       size += root->pLeft->size();
-      
+
    if (root->pRight)
       size += root->pRight->size();
 
@@ -227,37 +232,38 @@ void BST<T> :: insert(const T & in_value)
 template<class T>
 void BST<T> :: remove(const BSTIterator<T> & in_pItem)
 {
-   //BinaryNode <T> node = *in_pItem;
+   BinaryNode <T> node = *in_pItem.nodes.top();
+
    // No item to remove
-   //if (find(node) == NULL)
-   //{
-   //   cout << "Item not found.";
-   //   return;
-   //}
+   if (find(node.data) == NULL)
+   {
+      cout << "Item not found.";
+      return;
+   }
 
-   //// Case where there are 2 children
-   //if (node->pLeft != NULL && node->pRight != NULL)
-   //{
-   //   // find the in-order successor
-   //   BinaryNode <T> successor = node->pRight;
-   //   while (successor->pLeft != NULL)
-   //   {
-   //      successor = successor->pLeft;
-   //   }
-   //   node->data = successor->data;
-   //   node = successor;
-   //}
+   // Case where there are 2 children
+   if (node.pLeft != NULL && node.pRight != NULL)
+   {
+      // find the in-order successor
+      BinaryNode <T> successor = *node.pRight;
+      while (successor.pLeft != NULL)
+      {
+         successor = *successor.pLeft;
+      }
+      node.data = successor.data;
+      node = successor;
+   }
 
-   //// Case where there are no children or 1 child
-   //BinaryNode <T> subtree = node->pLeft;
-   //if (subtree == NULL)
-   //   subtree = node->pRight;
-   //if (node->pParent == NULL)
-   //   root = subtree;
-   //else if (node->pParent->pLeft == node)
-   //   node->pParent->pLeft = subtree;
-   //else node->pParent->pRight == subtree;
-   //delete node;
+   // Case where there are no children or 1 child
+   BinaryNode <T> subtree = *node.pLeft;
+   if (subtree == NULL)
+      subtree = *node.pRight;
+   if (node.pParent == NULL)
+      root = &subtree;
+   else if (*node.pParent->pLeft == node)
+      node.pParent->pLeft = &subtree;
+   else node.pParent->pRight = &subtree;
+   delete &node;
 }
 
 /**************************************************
