@@ -28,11 +28,20 @@ class BSTIterator
 public:
    friend class BST<T>;
 
+   // The nodes stack should always have a NULL pointer at its head
+   // This helps us easily tell when we've emptied the stack and it helps
+   // in comparing the top() to the NULL (end) iterator
    BSTIterator() { nodes.push(NULL); }
-   BSTIterator(BinaryNode<T> * in_node) { nodes.push(in_node); }
+   BSTIterator(BinaryNode<T> * in_node)
+   {
+      nodes.push(NULL);  
+      nodes.push(in_node);
+   }
+   // We assume that the source has a well-formed stack that has a NULL
+   // at its head
    BSTIterator(stack<BinaryNode<T> * > in_stack) { nodes = in_stack; }
    BSTIterator<T> & operator -- ();
-   BSTIterator<T> & operator ++ () { return *this; };
+   BSTIterator<T> & operator ++ ();
    bool operator == (const BSTIterator<T> & rhs);
    bool operator != (const BSTIterator<T> & rhs);
    T & operator * () const { return nodes.top()->data; }
@@ -62,9 +71,11 @@ public:
 
    BSTIterator<T> find(const T & in_value) const { BSTIterator<T> result; return result;  }
    BSTIterator<T> begin() const;
-   BSTIterator<T> end() { return BSTIterator <T>(NULL); }
+   // end is simply an iterator with a NULL pointer at the top of its stack
+   BSTIterator<T> end() { return BSTIterator <T>(); }
    BSTIterator<T> rbegin() const;
-   BSTIterator<T> rend() { return BSTIterator <T>(NULL); }
+   // rend is an iterator with a NULL pointer at the top of its stack
+   BSTIterator<T> rend() { return BSTIterator <T>(); }
 
 private:
    void insertInternal(const T & in_value, BinaryNode<T> * & in_subtree);
@@ -182,6 +193,46 @@ BSTIterator <T> & BSTIterator <T> :: operator -- ()
 
    // we are the left-child, go up as long as we are the left child!
    while (nodes.top() != NULL && pSave == nodes.top()->pLeft)
+   {
+      pSave = nodes.top();
+      nodes.pop();
+   }
+
+   return *this;
+}
+
+/**************************************************
+* BST ITERATOR :: INCREMENT PREFIX
+*     advance by one. This implementation closely
+* follows Bro. Helfrich's but also the guidance
+* from the assignment
+*************************************************/
+template<class T>
+inline BSTIterator<T>& BSTIterator<T>::operator++()
+{
+   if (NULL == nodes.top())
+      return *this;
+
+   if (NULL != nodes.top()->pRight)
+   {
+      nodes.push(nodes.top()->pRight);
+
+      while (nodes.top()->pLeft)
+         nodes.push(nodes.top()->pLeft);
+
+      return *this;
+   }
+
+   BinaryNode<T> * pSave = nodes.top();
+   nodes.pop();
+
+   if (NULL == nodes.top())
+      return *this;
+
+   if (pSave == nodes.top()->pLeft)
+      return *this;
+
+   while (nodes.top() != NULL && nodes.top()->pRight == pSave)
    {
       pSave = nodes.top();
       nodes.pop();
@@ -337,7 +388,28 @@ BinaryNode <T> * BST<T> :: findRight(BinaryNode <T> * pElement) const
 template <class T>
 BSTIterator<T> BST<T> :: begin() const
 {
-   return BSTIterator<T>(findLeft(root));
+   // Per the guidance in the assignment, it is best
+   // if the iterator already has a stack with the nodes
+   // from the left-most element to the root of the tree
+   stack<BinaryNode<T> *> temp;
+
+   // We push a NULL at the head of the stack so that
+   // we know when we've reached the end
+   temp.push(NULL);
+
+   // Now, we push all the nodes from the root down
+   // to the left-most node
+   BinaryNode<T> * node = root;
+   while (NULL != node)
+   {
+      temp.push(node);
+      node = node->pLeft;
+   }
+
+   // We now have a stack where the top() is the left-most
+   // node of our tree and the nodes below it proceed up
+   // to the root. We build an iterator from this stack
+   return BSTIterator<T>(temp);
 }
 
 /**************************************************
@@ -347,7 +419,20 @@ BSTIterator<T> BST<T> :: begin() const
 template <class T>
 BSTIterator<T> BST<T> :: rbegin() const
 {
-   return BSTIterator<T>(findRight(root));
+   // This works the same as the BEGIN function
+   // except that here we want to build the stack
+   // from the root to the rightmost node
+   stack<BinaryNode<T> *> temp;
+   temp.push(NULL);
+
+   BinaryNode<T> * node = root;
+   while (NULL != node)
+   {
+      temp.push(node);
+      node = node->pRight;
+   }
+
+   return BSTIterator<T>(temp);
 }
 
 #endif // BST_H
