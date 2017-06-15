@@ -28,6 +28,8 @@ public:
    BSTIterator(stack<BinaryNode<T> * > in_stack) { nodes = in_stack; }
    BSTIterator<T> & operator -- ();
    BSTIterator<T> & operator ++ () { return *this; };
+   bool operator == (const BSTIterator<T> & rhs);
+   bool operator != (const BSTIterator<T> & rhs);
    T & operator * () const { return nodes.top()->data; }
 
 private:
@@ -83,14 +85,10 @@ BinaryNode<T> * BST<T> :: copy(BinaryNode <T> * pElement)
    try
    {
    newNode = new BinaryNode <T>(pElement->data);
-   if (pElement->pLeft != NULL)
-      {
-         newNode->pLeft = copy(pElement->pLeft);
-      }
-   if (pElement->pRight != NULL)
-      {
-         newNode->pRight = copy(pElement->pRight);
-      }
+      
+       newNode->pLeft = copy(pElement->pLeft);
+       newNode->pRight = copy(pElement->pRight);
+      
     }
     catch(std::bad_alloc)
     {
@@ -105,10 +103,7 @@ BinaryNode<T> * BST<T> :: copy(BinaryNode <T> * pElement)
 template <class T>
 BST <T> :: BST(BST <T> & in_source) throw (const char *)
 {
-   if (in_source.root != NULL)
-   {
       this->root = copy(in_source.root);
-   }
 }
 
 /*******************************************
@@ -126,9 +121,9 @@ BST <T> :: BST(BST <T> & in_source) throw (const char *)
 * Indicates whether two BSTIterators point to the same node
 *************************************************************************/
 template <class T>
-bool operator != (const BSTIterator<T> & lhs, const BSTIterator<T> & rhs)
+bool BSTIterator<T> :: operator != (const BSTIterator<T> & rhs)
 {
-   return false;
+   return nodes.top() != rhs.nodes.top();
 }
 
 /************************************************************************
@@ -136,9 +131,9 @@ bool operator != (const BSTIterator<T> & lhs, const BSTIterator<T> & rhs)
 * Indicates whether two BSTIterators point to the same node
 *************************************************************************/
 template <class T>
-bool operator == (const BSTIterator<T> & lhs, const BSTIterator<T> & rhs)
+bool BSTIterator<T> :: operator == (const BSTIterator<T> & rhs)
 {
-   return false;
+   return nodes.top() == rhs.nodes.top();
 }
 
 /**************************************************
@@ -203,10 +198,10 @@ int BST<T> :: size() const
 
    // add root and any subtrees
    int size = 1;
-
+   
    if (root->pLeft)
       size += root->pLeft->size();
-
+      
    if (root->pRight)
       size += root->pRight->size();
 
