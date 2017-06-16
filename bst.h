@@ -15,6 +15,9 @@
 #include <stack>
 #include "bnode.h"
 
+template <class T>
+class BST; // fwd declaration
+
 /*************************************************************************
 * CLASS: BSTITERATOR
 * Iterator for a BST
@@ -23,11 +26,22 @@ template <class T>
 class BSTIterator
 {
 public:
+   friend class BST<T>;
+
+   // The nodes stack should always have a NULL pointer at its head
+   // This helps us easily tell when we've emptied the stack and it helps
+   // in comparing the top() to the NULL (end) iterator
    BSTIterator() { nodes.push(NULL); }
-   BSTIterator(BinaryNode<T> * in_node) { nodes.push(in_node); }
+   BSTIterator(BinaryNode<T> * in_node)
+   {
+      nodes.push(NULL);  
+      nodes.push(in_node);
+   }
+   // We assume that the source has a well-formed stack that has a NULL
+   // at its head
    BSTIterator(stack<BinaryNode<T> * > in_stack) { nodes = in_stack; }
    BSTIterator<T> & operator -- ();
-   BSTIterator<T> & operator ++ () { return *this; };
+   BSTIterator<T> & operator ++ ();
    bool operator == (const BSTIterator<T> & rhs);
    bool operator != (const BSTIterator<T> & rhs);
    T & operator * () const { return nodes.top()->data; }
@@ -55,10 +69,12 @@ public:
    void insert(const T & in_value);
    void remove(const BSTIterator<T> & in_pItem);
 
-   BSTIterator<T> find(const T & in_value) const { BSTIterator<T> result; return result;  }
+   BSTIterator<T> find(const T & in_value) const;
    BSTIterator<T> begin() const;
+   // end is simply an iterator with a NULL pointer at the top of its stack
    BSTIterator<T> end() { return BSTIterator <T>(NULL); }
    BSTIterator<T> rbegin() const;
+   // rend is an iterator with a NULL pointer at the top of its stack
    BSTIterator<T> rend() { return BSTIterator <T>(NULL); }
 
 private:
@@ -85,10 +101,10 @@ BinaryNode<T> * BST<T> :: copy(BinaryNode <T> * pElement)
    try
    {
    newNode = new BinaryNode <T>(pElement->data);
-      
+
        newNode->pLeft = copy(pElement->pLeft);
        newNode->pRight = copy(pElement->pRight);
-      
+
     }
     catch(std::bad_alloc)
     {
@@ -185,6 +201,46 @@ BSTIterator <T> & BSTIterator <T> :: operator -- ()
    return *this;
 }
 
+/**************************************************
+* BST ITERATOR :: INCREMENT PREFIX
+*     advance by one. This implementation closely
+* follows Bro. Helfrich's but also the guidance
+* from the assignment
+*************************************************/
+template<class T>
+inline BSTIterator<T>& BSTIterator<T>::operator++()
+{
+   if (NULL == nodes.top())
+      return *this;
+
+   if (NULL != nodes.top()->pRight)
+   {
+      nodes.push(nodes.top()->pRight);
+
+      while (nodes.top()->pLeft)
+         nodes.push(nodes.top()->pLeft);
+
+      return *this;
+   }
+
+   BinaryNode<T> * pSave = nodes.top();
+   nodes.pop();
+
+   if (NULL == nodes.top())
+      return *this;
+
+   if (pSave == nodes.top()->pLeft)
+      return *this;
+
+   while (nodes.top() != NULL && nodes.top()->pRight == pSave)
+   {
+      pSave = nodes.top();
+      nodes.pop();
+   }
+
+   return *this;
+}
+
 /*****************************************
 * BST:: SIZE
 * Number of elements in binary search tree.
@@ -198,10 +254,10 @@ int BST<T> :: size() const
 
    // add root and any subtrees
    int size = 1;
-   
+
    if (root->pLeft)
       size += root->pLeft->size();
-      
+
    if (root->pRight)
       size += root->pRight->size();
 
@@ -224,42 +280,67 @@ void BST<T> :: insert(const T & in_value)
 * BST :: REMOVE
 * Remove a value from the BST and adjust tree.
 *************************************************/
+
 template<class T>
 void BST<T> :: remove(const BSTIterator<T> & in_pItem)
 {
-   //BinaryNode <T> node = *in_pItem;
+   BinaryNode <T> * node = in_pItem.nodes.top();
+
    // No item to remove
-   //if (find(node) == NULL)
-   //{
-   //   cout << "Item not found.";
-   //   return;
-   //}
+   if (find(node->data) == NULL)
+   {
+      cout << "Item not found.";
+      return;
+   }
 
-   //// Case where there are 2 children
-   //if (node->pLeft != NULL && node->pRight != NULL)
-   //{
-   //   // find the in-order successor
-   //   BinaryNode <T> successor = node->pRight;
-   //   while (successor->pLeft != NULL)
-   //   {
-   //      successor = successor->pLeft;
-   //   }
-   //   node->data = successor->data;
-   //   node = successor;
-   //}
+   //Case where there are 2 children
+   if (node->pLeft != NULL && node->pRight != NULL)
+   {
+      // find the in-order successor
+      BinaryNode <T> * successor = node->pRight;
+      while (successor->pLeft != NULL)
+      {
+         successor = successor->pLeft;
+      }
+      node->data = successor->data;
+      node = successor;
+   }
 
-   //// Case where there are no children or 1 child
-   //BinaryNode <T> subtree = node->pLeft;
-   //if (subtree == NULL)
-   //   subtree = node->pRight;
-   //if (node->pParent == NULL)
-   //   root = subtree;
-   //else if (node->pParent->pLeft == node)
-   //   node->pParent->pLeft = subtree;
-   //else node->pParent->pRight == subtree;
-   //delete node;
+   // Case where there are no children or 1 child
+   BinaryNode <T> * subtree = node->pLeft;
+   if (subtree == NULL)
+      subtree = node->pRight;
+   if (node->pParent == NULL)
+      root = subtree;
+   else if (node->pParent->pLeft == node)
+      node->pParent->pLeft = subtree;
+   else 
+      node->pParent->pRight = subtree;
+   
+   delete node;
 }
 
+/**************************************************
+* BST :: FIND
+* Finds the data by going through the tree
+*************************************************/
+template <class T>
+BSTIterator<T> BST<T> :: find(const T & in_value) const 
+   { 
+      BinaryNode<T> * result = root;
+      while (result != NULL && in_value != result->data)
+      {
+         if(in_value < result->data)
+         {
+            result = result->pLeft;
+         }
+         else
+            result = result->pRight;
+      }
+      
+   return BSTIterator<T>(result);  
+  }
+  
 /**************************************************
 * BST :: INSERTINTERNAL
 * Implements a recursive algorithm to insert a
@@ -331,7 +412,28 @@ BinaryNode <T> * BST<T> :: findRight(BinaryNode <T> * pElement) const
 template <class T>
 BSTIterator<T> BST<T> :: begin() const
 {
-   return BSTIterator<T>(findLeft(root));
+   // Per the guidance in the assignment, it is best
+   // if the iterator already has a stack with the nodes
+   // from the left-most element to the root of the tree
+   stack<BinaryNode<T> *> temp;
+
+   // We push a NULL at the head of the stack so that
+   // we know when we've reached the end
+   temp.push(NULL);
+
+   // Now, we push all the nodes from the root down
+   // to the left-most node
+   BinaryNode<T> * node = root;
+   while (NULL != node)
+   {
+      temp.push(node);
+      node = node->pLeft;
+   }
+
+   // We now have a stack where the top() is the left-most
+   // node of our tree and the nodes below it proceed up
+   // to the root. We build an iterator from this stack
+   return BSTIterator<T>(temp);
 }
 
 /**************************************************
@@ -341,7 +443,20 @@ BSTIterator<T> BST<T> :: begin() const
 template <class T>
 BSTIterator<T> BST<T> :: rbegin() const
 {
-   return BSTIterator<T>(findRight(root));
+   // This works the same as the BEGIN function
+   // except that here we want to build the stack
+   // from the root to the rightmost node
+   stack<BinaryNode<T> *> temp;
+   temp.push(NULL);
+
+   BinaryNode<T> * node = root;
+   while (NULL != node)
+   {
+      temp.push(node);
+      node = node->pRight;
+   }
+
+   return BSTIterator<T>(temp);
 }
 
 #endif // BST_H
