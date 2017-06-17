@@ -19,6 +19,168 @@
 template <class T>
 class BST; // fwd declaration
 
+/*************************************************************************
+* CLASS: BSTITERATOR
+* Iterator for a BST
+**************************************************************************/
+template <class T>
+class BSTIterator
+{
+public:
+   friend class BST<T>;
+
+   // The nodes stack should always have a NULL pointer at its head
+   // This helps us easily tell when we've emptied the stack and it helps
+   // in comparing the top() to the NULL (end) iterator
+   BSTIterator() { nodes.push(NULL); }
+   BSTIterator(BinaryNode<T> * in_node)
+   {
+      nodes.push(NULL);
+      nodes.push(in_node);
+   }
+   // We assume that the source has a well-formed stack that has a NULL
+   // at its head
+   BSTIterator(stack<BinaryNode<T> * > in_stack) { nodes = in_stack; }
+   BSTIterator(const BSTIterator <T> & in_source);
+   BSTIterator <T> & operator = (const BSTIterator <T> & rhs);
+   BSTIterator <T> & operator -- ();
+   BSTIterator <T> & operator ++ ();
+   bool operator == (const BSTIterator<T> & rhs);
+   bool operator != (const BSTIterator<T> & rhs);
+   T & operator * () const { return nodes.top()->data; }
+
+private:
+   stack<BinaryNode<T> * > nodes;
+};
+
+/*******************************************
+* BSTITERATOR :: COPY CONSTRUCTOR
+*******************************************/
+template <class T>
+BSTIterator <T> ::BSTIterator(const BSTIterator <T> & in_source)
+{
+   *this = in_source;
+}
+
+/*******************************************
+* BSTITERATOR :: ASSIGNMENT OPERATOR
+*******************************************/
+template <class T>
+BSTIterator <T> & BSTIterator <T> :: operator = (const BSTIterator <T> & rhs)
+{
+   this->nodes = rhs.nodes;
+   return *this;
+}
+
+/**************************************************
+* BST ITERATOR :: DECREMENT PREFIX
+*     advance by one. Note that this implementation uses
+*     a stack of nodes to remember where we are. This stack
+*     is called "nodes".
+* Author:      Br. Helfrich
+* Performance: O(log n) though O(1) in the common case
+*************************************************/
+template <class T>
+BSTIterator <T> & BSTIterator <T> :: operator -- ()
+{
+   // do nothing if we have nothing
+   if (nodes.top() == NULL)
+      return *this;
+
+   // if there is a left node, take it
+   if (nodes.top()->pLeft != NULL)
+   {
+      nodes.push(nodes.top()->pLeft);
+
+      // there might be more right-most children
+      while (nodes.top()->pRight)
+         nodes.push(nodes.top()->pRight);
+      return *this;
+   }
+
+   // there are no left children, the right are done
+   assert(nodes.top()->pLeft == NULL);
+   BinaryNode <T> * pSave = nodes.top();
+   nodes.pop();
+
+   // if the parent is the NULL, we are done!
+   if (NULL == nodes.top())
+      return *this;
+
+   // if we are the right-child, got to the parent.
+   if (pSave == nodes.top()->pRight)
+      return *this;
+
+   // we are the left-child, go up as long as we are the left child!
+   while (nodes.top() != NULL && pSave == nodes.top()->pLeft)
+   {
+      pSave = nodes.top();
+      nodes.pop();
+   }
+
+   return *this;
+}
+
+/**************************************************
+* BST ITERATOR :: INCREMENT PREFIX
+*     advance by one. This implementation closely
+* follows Bro. Helfrich's but also the guidance
+* from the assignment
+*************************************************/
+template<class T>
+inline BSTIterator <T> & BSTIterator <T> :: operator ++()
+{
+   if (NULL == nodes.top())
+      return *this;
+
+   if (NULL != nodes.top()->pRight)
+   {
+      nodes.push(nodes.top()->pRight);
+
+      while (nodes.top()->pLeft)
+         nodes.push(nodes.top()->pLeft);
+
+      return *this;
+   }
+
+   BinaryNode<T> * pSave = nodes.top();
+   nodes.pop();
+
+   if (NULL == nodes.top())
+      return *this;
+
+   if (pSave == nodes.top()->pLeft)
+      return *this;
+
+   while (nodes.top() != NULL && nodes.top()->pRight == pSave)
+   {
+      pSave = nodes.top();
+      nodes.pop();
+   }
+
+   return *this;
+}
+
+/************************************************************************
+* :: EQUAL (BSTITERATOR)
+* Indicates whether two BSTIterators point to the same node
+*************************************************************************/
+template <class T>
+bool BSTIterator<T> :: operator == (const BSTIterator<T> & rhs)
+{
+   return nodes.top() == rhs.nodes.top();
+}
+
+/************************************************************************
+* :: NOT EQUAL (BSTITERATOR)
+* Indicates whether two BSTIterators point to the same node
+*************************************************************************/
+template <class T>
+bool BSTIterator<T> :: operator != (const BSTIterator<T> & rhs)
+{
+   return nodes.top() != rhs.nodes.top();
+}
+
 /***************************************************************************
 * CLASS: BST
 * A Binary Search Tree
@@ -52,40 +214,6 @@ private:
    BinaryNode <T> * findRight(BinaryNode <T> * pElement) const;
    BinaryNode <T> * copy(BinaryNode <T> * pElement);
    BinaryNode <T> * root;
-};
-
-/*************************************************************************
-* CLASS: BSTITERATOR
-* Iterator for a BST
-**************************************************************************/
-template <class T>
-class BSTIterator
-{
-public:
-   friend class BST<T>;
-
-   // The nodes stack should always have a NULL pointer at its head
-   // This helps us easily tell when we've emptied the stack and it helps
-   // in comparing the top() to the NULL (end) iterator
-   BSTIterator() { nodes.push(NULL); }
-   BSTIterator(BinaryNode<T> * in_node)
-   {
-      nodes.push(NULL);
-      nodes.push(in_node);
-   }
-   // We assume that the source has a well-formed stack that has a NULL
-   // at its head
-   BSTIterator(stack<BinaryNode<T> * > in_stack) { nodes = in_stack; }
-   BSTIterator(const BSTIterator <T> & in_source);
-   BSTIterator <T> & operator = (const BSTIterator <T> & rhs);
-   BSTIterator <T> & operator -- ();
-   BSTIterator <T> & operator ++ ();
-   bool operator == (const BSTIterator<T> & rhs);
-   bool operator != (const BSTIterator<T> & rhs);
-   T & operator * () const { return nodes.top()->data; }
-
-private:
-   stack<BinaryNode<T> * > nodes;
 };
 
 /*******************************************
@@ -350,134 +478,6 @@ BinaryNode<T> * BST<T> :: copy(BinaryNode <T> * pElement)
       throw "ERROR: Unable to allocate a node";
    }
    return newNode;
-}
-
-/*******************************************
-* BSTITERATOR :: COPY CONSTRUCTOR
-*******************************************/
-template <class T>
-BSTIterator <T> :: BSTIterator(const BSTIterator <T> & in_source)
-{
-   *this = in_source;
-}
-
-/*******************************************
-* BSTITERATOR :: ASSIGNMENT OPERATOR
-*******************************************/
-template <class T>
-BSTIterator <T> & BSTIterator <T> :: operator = (const BSTIterator <T> & rhs)
-{
-   this->nodes = rhs.nodes;
-   return *this;
-}
-
-/**************************************************
-* BST ITERATOR :: DECREMENT PREFIX
-*     advance by one. Note that this implementation uses
-*     a stack of nodes to remember where we are. This stack
-*     is called "nodes".
-* Author:      Br. Helfrich
-* Performance: O(log n) though O(1) in the common case
-*************************************************/
-template <class T>
-BSTIterator <T> & BSTIterator <T> :: operator -- ()
-{
-   // do nothing if we have nothing
-   if (nodes.top() == NULL)
-      return *this;
-
-   // if there is a left node, take it
-   if (nodes.top()->pLeft != NULL)
-   {
-      nodes.push(nodes.top()->pLeft);
-
-      // there might be more right-most children
-      while (nodes.top()->pRight)
-         nodes.push(nodes.top()->pRight);
-      return *this;
-   }
-
-   // there are no left children, the right are done
-   assert(nodes.top()->pLeft == NULL);
-   BinaryNode <T> * pSave = nodes.top();
-   nodes.pop();
-
-   // if the parent is the NULL, we are done!
-   if (NULL == nodes.top())
-      return *this;
-
-   // if we are the right-child, got to the parent.
-   if (pSave == nodes.top()->pRight)
-      return *this;
-
-   // we are the left-child, go up as long as we are the left child!
-   while (nodes.top() != NULL && pSave == nodes.top()->pLeft)
-   {
-      pSave = nodes.top();
-      nodes.pop();
-   }
-
-   return *this;
-}
-
-/**************************************************
-* BST ITERATOR :: INCREMENT PREFIX
-*     advance by one. This implementation closely
-* follows Bro. Helfrich's but also the guidance
-* from the assignment
-*************************************************/
-template<class T>
-inline BSTIterator <T> & BSTIterator <T> :: operator ++()
-{
-   if (NULL == nodes.top())
-      return *this;
-
-   if (NULL != nodes.top()->pRight)
-   {
-      nodes.push(nodes.top()->pRight);
-
-      while (nodes.top()->pLeft)
-         nodes.push(nodes.top()->pLeft);
-
-      return *this;
-   }
-
-   BinaryNode<T> * pSave = nodes.top();
-   nodes.pop();
-
-   if (NULL == nodes.top())
-      return *this;
-
-   if (pSave == nodes.top()->pLeft)
-      return *this;
-
-   while (nodes.top() != NULL && nodes.top()->pRight == pSave)
-   {
-      pSave = nodes.top();
-      nodes.pop();
-   }
-
-   return *this;
-}
-
-/************************************************************************
-* :: EQUAL (BSTITERATOR)
-* Indicates whether two BSTIterators point to the same node
-*************************************************************************/
-template <class T>
-bool BSTIterator<T> :: operator == (const BSTIterator<T> & rhs)
-{
-   return nodes.top() == rhs.nodes.top();
-}
-
-/************************************************************************
-* :: NOT EQUAL (BSTITERATOR)
-* Indicates whether two BSTIterators point to the same node
-*************************************************************************/
-template <class T>
-bool BSTIterator<T> :: operator != (const BSTIterator<T> & rhs)
-{
-   return nodes.top() != rhs.nodes.top();
 }
 
 #endif // BST_H
